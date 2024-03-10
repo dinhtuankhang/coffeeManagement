@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Header from './Header'
 
 const Login = () => {
-    const [data, setData] = useState([])
+    const navigate = useNavigate()
+    const [data, setData] = useState[{}]
     const [input, setInput] = useState({
         username: '',
         password: '',
@@ -11,7 +14,8 @@ const Login = () => {
         password: '',
         login: '',
     })
-    let valid = false;
+    const [valid, setValid] = useState(false)
+    const [id, setId] = useState(null)
     const handleInputChange = (e) => {
         const newData = { ...input, [e.target.name]: e.target.value }
         setInput(newData)
@@ -33,26 +37,21 @@ const Login = () => {
             setErrors(prev => ({ ...prev, password: '' }))
         }
         if (flag) {
+            console.log(data)
             for (let i = 0; i < data.length; i++) {
                 if ((input.username === data[i].username) && (input.password === data[i].password)) {
-                    valid = true
-                    break;
+                    setValid(true)
+                    setId(data[i].id);
+                    navigate('/')
                 }
-                console.log(valid)
             }
-            if (valid) {
-                alert('correct')
-            }
-            else {
-                setErrors(prev => ({ ...prev, password: 'Incorrect username or password' }))
-            }
+            setErrors(prev => ({ ...prev, password: 'Incorrect username or password' }))
         }
-    }
-
+    };
     useEffect(() => {
         fetch('https://65b5ea4dda3a3c16ab00077e.mockapi.io/users')
             .then((response) => response.json())
-            .then((json) => setData(json));
+            .then((json) => setData(json))
     }, [])
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'lightgreen' }}>

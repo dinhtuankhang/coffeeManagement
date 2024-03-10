@@ -9,12 +9,16 @@ import Clock from './excercise/Clock';
 import API from './excercise/API';
 import Login from './excercise/Login';
 import Signup from './excercise/Signup';
+import { Outlet } from 'react-router-dom';
+import Header from './excercise/Header';
 function App() {
   return (
     <div className="App">
-      {/* <Login/> */}
-      <Signup/>
-      {/* <API/> */}
+      <Header/>
+      <main>
+        <Outlet/>
+      </main>
+      <footer></footer>
     </div>
   );
 }
