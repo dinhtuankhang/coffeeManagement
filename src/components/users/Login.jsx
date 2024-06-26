@@ -1,242 +1,125 @@
-// ⁡⁣⁣⁢​‌‌‍𝗦𝗶𝗴𝗻𝘂𝗽 𝗮𝗻𝗱 𝗟𝗼𝗴𝗶𝗻 𝗙𝘂𝗻𝗰𝘁𝗶𝗼𝗻​⁡
 import React, { useState } from 'react';
-import { collection, addDoc, doc, query, getDocs, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import { AuthContext, useAuthContext } from '../../contexts/AuthProvider';
-import { browserSessionPersistence, createUserWithEmailAndPassword, setPersistence } from "firebase/auth";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { setPersistence, signInWithEmailAndPassword, browserSessionPersistence } from "firebase/auth";
 import { auth, db } from '../../firebaseconfig';
-import { useQuery } from 'react-query';
-import { faLaugh } from '@fortawesome/free-solid-svg-icons';
-const SignupLogin = () => {
-    const [securityCode, setSecurityCode] = useState()
-    const [login, setLogin] = useState(false)
-    const [selectedUserRole, setSelectedUserRole] = useState('');
-    const [signupInput, setSignupInput] = useState({
-        username: '',
-        password: '',
-        confirmPassword: '',
-        email: '',
-        userRole: ''
-    })
+import { motion } from 'framer-motion';
+
+const Login = () => {
     const [loginInput, setLoginInput] = useState({
         email: '',
         password: ''
-    })
-    const handleLoginInputChange = (e) => {
-        const newData = { ...loginInput, [e.target.name]: e.target.value }
-        setLoginInput(newData)
-    }
-    const handleSecurityCodeChange = (event) => {
-        setSecurityCode(event.target.value)
-    }
-    const handleUserRoleChange = (event) => {
-        setSelectedUserRole(event.target.value)
-    }
+    });
     const navigate = useNavigate();
-    const handleSignupInputChange = (e) => {
-        const newData = { ...signupInput, [e.target.name]: e.target.value }
-        setSignupInput(newData)
-    }
-    const validateEmail = (email) => {
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-        return emailRegex.test(email)
-    }; // Thiis is the function that can be used to check the validation of email
-    const validatePassword = (password) => {
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-        return passwordRegex.test(password)
-    } // Thiis is the function that can be used to check the validation of password
-    const [inputErrors, setInputErrors] = useState({
-        username: '',
-        password: '',
-        confirmPassword: '',
-        email: '',
-        userRole: selectedUserRole,
-        securityCode: '',
-    })
+
+    const handleLoginInputChange = (e) => {
+        const newData = { ...loginInput, [e.target.name]: e.target.value };
+        setLoginInput(newData);
+    };
+
     const [loginInputErrors, setLoginInputErrors] = useState({
         email: '',
         password: ''
-    })
-    const handleSignup = (e) => {
-        e.preventDefault()
-        let flag = true
-        if (!signupInput.username) {
-            setInputErrors(prev => ({ ...prev, username: 'There must be a username' }))
-            flag = false
-        }
-        else {
-            setInputErrors(prev => ({ ...prev, username: '' }))
-        } //⁡⁢⁣⁣Check if username input is empty or not⁡
-        if (!validateEmail(signupInput.email)) {
-            setInputErrors(prev => ({ ...prev, email: 'Invalid email' }))
-            flag = false
-        }
-        else {
-            setInputErrors(prev => ({ ...prev, email: '' }))
-        } //⁡⁢⁣⁣Check if the email is validated⁡
-        if (!validatePassword(signupInput.password)) {
-            setInputErrors(prev => ({ ...prev, password: 'Password must contain at least 8 characters, one capital letter, one normal letter, numbers and special characters' }))
-            flag = false
-        }
-        else {
-            setInputErrors(prev => ({ ...prev, password: '' }))
-        } //⁡⁢⁣⁣Check if the password is validated⁡
-        if (!selectedUserRole) {
-            setInputErrors(prev => ({ ...prev, userRole: 'Please choose a user role' }))
-            flag = false
-        }
-        else {
-            setInputErrors(prev => ({ ...prev, userRole: '' }))
-        } //⁡⁢⁣⁣Check if the user role is selected⁡
-        if (selectedUserRole === 'manager' && securityCode != 1111) {
-            setInputErrors(prev => ({ ...prev, securityCode: 'Incorrect Code' }))
-            flag = false
-        }
-        else {
-            setInputErrors(prev => ({ ...prev, securityCode: '' }))
-        }
-        if (selectedUserRole === 'employee' && securityCode != 2222) {
-            setInputErrors(prev => ({ ...prev, securityCode: 'Incorrect Code' }))
-            flag = false
-        }
-        else {
-            setInputErrors(prev => ({ ...prev, securityCode: '' }))
-        }
-        if (!(signupInput.confirmPassword === signupInput.password)) {
-            setInputErrors(prev => ({ ...prev, confirmPassword: 'Passwords are not matched' }))
-            flag = false
-        }
-        else {
-            setInputErrors(prev => ({ ...prev, confirmPassword: '' }))
-        } //⁡⁢⁣⁣Contrast the passwords are matched⁡
-        if (flag) {
-            createUserWithEmailAndPassword(auth, signupInput.email, signupInput.password)
-                .then(async (userCredential) => {
-                    // ⁡⁢⁣⁣Signed up ⁡
-                    const user = userCredential.user;
-                    try {
-                        const docRef = await addDoc(collection(db, "employeesInfo"), {
-                            username: signupInput.username,
-                            email: signupInput.email,
-                            userRole: selectedUserRole,
-                            uid: user.uid,
-                            fullname: '',
-                            img: '',
-                            taskNumber: 0
-                        });
-                        if (selectedUserRole === 'employee') {
-                            navigate('/edashboard');
-                        } else {
-                            navigate('/mtask');
-                        }
-                    } catch (error) {
-                        console.error("Error adding document or navigating: ", error);
-                    }
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                });
-        } //⁡⁣⁢⁡⁢⁣⁣If all the conditions are met, started to add data to the Database⁡
-    }
-    const handleLogin = () => {
-        let flag = true
+    });
+
+    const handleLogin = async () => {
+        let flag = true;
         if (!loginInput.email) {
-            setLoginInputErrors(prev => ({ ...prev, email: 'Please Type Your Email' }))
-            flag = false
-        }
-        else {
-            setLoginInputErrors(prev => ({ ...prev, email: '' }))
+            setLoginInputErrors(prev => ({ ...prev, email: 'Please type your email' }));
+            flag = false;
+        } else {
+            setLoginInputErrors(prev => ({ ...prev, email: '' }));
         }
         if (!loginInput.password) {
-            setLoginInputErrors(prev => ({ ...prev, password: 'Please Type Your Password' }))
-            flag = false
+            setLoginInputErrors(prev => ({ ...prev, password: 'Please type your password' }));
+            flag = false;
+        } else {
+            setLoginInputErrors(prev => ({ ...prev, password: '' }));
         }
-        else {
-            setLoginInputErrors(prev => ({ ...prev, password: '' }))
-        }
-        if (flag) {
-            setPersistence(auth, browserSessionPersistence)
-                .then(() => {
-                    signInWithEmailAndPassword(auth, loginInput.email, loginInput.password)
-                        .then(async (userCredential) => {
-                            setLogin(true)
-                            // ⁡⁢⁣⁣Signed in ⁡
-                            const user = userCredential.user;
-                            const userCollection = collection(db, 'employeesInfo')
-                            getDocs(userCollection)
-                            const userQuery = query(userCollection, where("uid", "==", user.uid))
-                            const docs = await getDocs(userQuery)
-                            let currentUser
-                            docs.forEach((doc) => {
-                                currentUser = doc.data()
-                            });
-                            if (currentUser.userRole === 'employee') {
-                                navigate('/edashboard')
-                            }
-                            else {
-                                navigate('/mtask')
-                            }
-                        })
-                })
-                .catch((error) => {
-                    console.log(error)
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
 
+        if (flag) {
+            try {
+                await setPersistence(auth, browserSessionPersistence);
+                const userCredential = await signInWithEmailAndPassword(auth, loginInput.email, loginInput.password);
+                const user = userCredential.user;
+                const userCollection = collection(db, 'usersInfo');
+                const userQuery = query(userCollection, where("uid", "==", user.uid));
+                const docs = await getDocs(userQuery);
+                let currentUser;
+                docs.forEach((doc) => {
+                    currentUser = doc.data();
                 });
-        } // ⁡⁢⁣⁣‍Check with the Database, if matched, sign users in.⁡
-    }
+                navigate('/product');
+            } catch (error) {
+                console.error("Error during login: ", error);
+                alert(`Error during login: ${error.message}`);
+            }
+        }
+    };
+
     return (
-        <div style={{ display: 'flex', minHeight: '695px' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#2569B3', width: '50%' }}>
-                <form style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', width: '80%' }}>
-                    <h2 style={{ marginBottom: '20px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>Sign up</h2>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px' }}>Username:</p>
-                    <input name='username' value={signupInput.username} style={{ width: '100%', height: '40px' }} onChange={handleSignupInputChange} />
-                    <div style={{ color: 'red' }}>{inputErrors.username ? inputErrors.username : ''}</div>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px' }}>Password:</p>
-                    <input type='password' name='password' value={signupInput.password} style={{ width: '100%', height: '40px' }} onChange={handleSignupInputChange} />
-                    <div style={{ color: 'red' }}>{inputErrors.password ? inputErrors.password : ''}</div>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px' }}>Confirm Password:</p>
-                    <input type='password' name='confirmPassword' value={signupInput.confirmPassword} style={{ width: '100%', height: '40px' }} onChange={handleSignupInputChange} />
-                    <div style={{ color: 'red' }}>{inputErrors.confirmPassword ? inputErrors.confirmPassword : ''}</div>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px' }}>Email:</p>
-                    <input name='email' value={signupInput.email} style={{ width: '100%', height: '40px' }} onChange={handleSignupInputChange} />
-                    <div style={{ color: 'red' }}>{inputErrors.email ? inputErrors.email : ''}</div>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px' }}>User Role:</p>
-                    <select id="userRole" style={{ width: '100%', height: '40px' }} onChange={handleUserRoleChange}>
-                        <option value="" disabled selected>Select your option</option>
-                        <option value={'employee'}>Employee</option>
-                        <option value={'manager'}>Manager</option>
-                    </select>
-                    <div style={{ color: 'red' }}>{inputErrors.userRole ? inputErrors.userRole : ''}</div>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px' }}>Security Code:</p>
-                    <input name='email' style={{ width: '100%', height: '40px' }} onChange={handleSecurityCodeChange} />
-                    <div style={{ color: 'red' }}>{inputErrors.securityCode ? inputErrors.securityCode : ''}</div>
-                    <button type="submit" className="btn btn-primary" style={{ fontWeight: 'bold', marginTop: '40px', width: '100%', height: '40px', backgroundColor: '#FF0000' }} onClick={handleSignup}>Sign Up</button>
-                </form>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: '#2569B3', width: '50%' }}>
-                <form style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', width: '80%' }}>
-                    <h2 style={{ marginBottom: '20px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>Log In</h2>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px' }}>Email:</p>
-                    <input name='email' style={{ width: '100%', height: '40px' }} onChange={handleLoginInputChange} />
-                    <div style={{ color: 'red' }}>{loginInputErrors.email ? loginInputErrors.email : ''}</div>
-                    <p style={{ fontWeight: 'bold', fontSize: '20px', marginTop: '20px' }}>Password:</p>
-                    <input name='password' type='password' style={{ width: '100%', height: '40px' }} onChange={handleLoginInputChange} />
-                    <div style={{ color: 'red' }}>{loginInputErrors.password ? loginInputErrors.password : ''}</div>
-                    <div style={{ marginTop: '10px' }}>
-                        <a href="#" style={{ color: 'blue' }} onClick={() => { navigate('/change') }}>Forgot Password?</a>
-                    </div>
-                    <button type="button" className="btn btn-primary" style={{ marginTop: '20px', width: '100%', height: '40px', backgroundColor: '#FF0000', fontWeight: 'bold' }} onClick={handleLogin}>Log in</button>
-                </form>
-                <button type='button' className="btn btn-primary" style={{ fontWeight: 'bold', marginLeft: '500px', marginTop: '190px', width: '200px', height: '40px', backgroundColor: '#FF0000', color: 'white', borderRadius: '10px' }} onClick={() => { navigate('/introduction') }}>Back To Home Page</button>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3E5AB', width: '100%', height: '100vh', fontFamily: 'Arial, sans-serif' }}>
+            <motion.form 
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                style={{ backgroundColor: '#FFFFFF', padding: '40px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', width: '400px', textAlign: 'center' }}
+                onSubmit={e => { e.preventDefault(); handleLogin(); }}
+            >
+                <h2 style={{ marginBottom: '20px', fontWeight: 'bold', color: '#8B4513' }}>Log In to Your Account</h2>
+                <motion.div 
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                    <p style={{ fontWeight: 'bold', fontSize: '18px', color: '#6B4226' }}>Email:</p>
+                    <input 
+                        name='email' 
+                        value={loginInput.email} 
+                        style={{ width: '100%', height: '40px', marginBottom: '10px', borderRadius: '5px', border: '1px solid #CCC', padding: '0 10px' }} 
+                        onChange={handleLoginInputChange} 
+                    />
+                    <div style={{ color: 'red', marginBottom: '10px' }}>{loginInputErrors.email}</div>
+                </motion.div>
+
+                <motion.div 
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                >
+                    <p style={{ fontWeight: 'bold', fontSize: '18px', color: '#6B4226' }}>Password:</p>
+                    <input 
+                        type='password' 
+                        name='password' 
+                        value={loginInput.password} 
+                        style={{ width: '100%', height: '40px', marginBottom: '20px', borderRadius: '5px', border: '1px solid #CCC', padding: '0 10px' }} 
+                        onChange={handleLoginInputChange} 
+                    />
+                    <div style={{ color: 'red', marginBottom: '20px' }}>{loginInputErrors.password}</div>
+                </motion.div>
+
+                <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ width: '100%', height: '40px', backgroundColor: '#8B4513', color: '#FFF', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', marginBottom:'10px' }}
+                    type="submit"
+                >
+                    Log In
+                </motion.button>
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ width: '100%', height: '40px', backgroundColor: '#6f4e37', color: '#FFF', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '10px' }}
+                    onClick={() => navigate('/introduction')}
+                >
+                    Back to Home
+                </motion.button>
+                <div style={{ marginTop: '10px' }}>
+                    <a href="#" style={{ color: '#8B4513' }} onClick={() => navigate('/change')}>Forgot Password?</a>
+                </div>
+            </motion.form>
         </div>
     );
 };
 
-export default SignupLogin;
+export default Login;

@@ -10,21 +10,9 @@ import {
 import Login from './components/users/Login';
 import AuthProvider from './contexts/AuthProvider';
 import ProtectedRoute from './contexts/ProtectedRoute';
-import Introduction from './components/IntroductionPage/Introduction';
-import ServiceProvided from './components/IntroductionPage/ServiceProvided';
-import Staffs from './components/IntroductionPage/Staffs';
-import MachinesAndDevices from './components/IntroductionPage/MachinesAndDevices';
-import CompletedJobs from './components/IntroductionPage/CompletedJobs';
-import EDashboard from './components/Employee/EDashboard';
-import ENotification from './components/Employee/ENotification';
-import ECalendar from './components/Employee/ECalendar';
-import ELibrary from './components/Employee/ELibrary';
-import EQuickChat from './components/Employee/EQuickChat';
-import MTasksManagement from './components/Manager/MTasksManagement';
-import MStaffsManagement from './components/Manager/MStaffsManagement';
-import MNotification from './components/Manager/MNotification';
-import MLibrary from './components/Manager/MLibrary';
-import MQuickChat from './components/Manager/MQuickChat';
+import Introduction from './components/Introduction';
+import Signup from './components/users/Signup';
+import Product from './components/users/Product';
 import ChangePassword from './components/users/ChangePassword';
 const router = createBrowserRouter([
   {
@@ -34,72 +22,24 @@ const router = createBrowserRouter([
     </ProtectedRoute>,
   },
   {
+    path:"/introduction",
+    element:<Introduction/>
+  },
+  {
+    path:"/signup",
+    element:<Signup/>
+  },
+  {
     path:"/login",
     element:<Login/>
   },
   {
-    path: "/introduction",
-    element: <Introduction/>,
+    path:"/product",
+    element:<Product/>
   },
   {
-    path: "/services",
-    element: <ServiceProvided/>,
-  },
-  {
-    path: "/staffs",
-    element: <Staffs/>,
-  },
-  {
-    path: "/machinesdevices",
-    element: <MachinesAndDevices/>,
-  },
-  {
-    path: "/completedjobs",
-    element: <CompletedJobs/>,
-  },
-  {
-    path: "/edashboard",
-    element: <EDashboard/>,
-  },
-  {
-    path: "/enotification",
-    element: <ENotification/>,
-  },
-  {
-    path: "/ecalendar",
-    element: <ECalendar/>,
-  },
-  {
-    path: "/elibrary",
-    element: <ELibrary/>,
-  },
-  {
-    path: "/echat",
-    element: <EQuickChat/>,
-  },
-  {
-    path: "/mtask",
-    element: <MTasksManagement/>,
-  },
-  {
-    path: "/mstaff",
-    element: <MStaffsManagement/>,
-  },
-  {
-    path: "/mnotification",
-    element: <MNotification/>,
-  },
-  {
-    path: "/mlibrary",
-    element: <MLibrary/>,
-  },
-  {
-    path: "/mchat",
-    element: <MQuickChat/>,
-  },
-  {
-    path: "/change",
-    element: <ChangePassword/>,
+    path:"/change",
+    element:<ChangePassword/>
   },
 ]);
 const root = ReactDOM.createRoot(document.getElementById('root'));
