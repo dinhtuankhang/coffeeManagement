@@ -23,7 +23,7 @@ const Signup = () => {
                             navigate('/product');
                         }
                     });
-                }, 1000); // Check every second
+                }, 1000);
 
                 return () => clearInterval(interval);
             }
@@ -89,6 +89,7 @@ const Signup = () => {
                 await addDoc(collection(db, "usersInfo"), {
                     fullname: signupInput.fullname,
                     email: signupInput.email,
+                    userRole : 'customer',
                     uid: user.uid,
                 });
 

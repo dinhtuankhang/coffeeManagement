@@ -14,6 +14,10 @@ import Introduction from './components/Introduction';
 import Signup from './components/users/Signup';
 import Product from './components/users/Product';
 import ChangePassword from './components/users/ChangePassword';
+import Order from './components/users/Order';
+import ManagerProduct from './components/users/ManagerProduct';
+import ManagerOrder from './components/users/ManagerOrder';
+import ManagerRevenue from './components/users/ManagerRevenue';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -40,6 +44,22 @@ const router = createBrowserRouter([
   {
     path:"/change",
     element:<ChangePassword/>
+  },
+  {
+    path:"/order",
+    element:<Order/>
+  },
+  {
+    path:"/managerproduct",
+    element:<ManagerProduct/>
+  },
+  {
+    path:"/managerorder",
+    element:<ManagerOrder/>
+  },
+  {
+    path:"/managerrevenue",
+    element:<ManagerRevenue/>
   },
 ]);
 const root = ReactDOM.createRoot(document.getElementById('root'));

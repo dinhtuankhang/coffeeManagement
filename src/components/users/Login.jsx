@@ -49,7 +49,12 @@ const Login = () => {
                 docs.forEach((doc) => {
                     currentUser = doc.data();
                 });
-                navigate('/product');
+                if(currentUser.userRole === 'customer'){
+                    navigate('/product');
+                }
+                else{
+                    navigate('/managerproduct')
+                }
             } catch (error) {
                 console.error("Error during login: ", error);
                 alert(`Error during login: ${error.message}`);

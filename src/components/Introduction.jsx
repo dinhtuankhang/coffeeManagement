@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import '@fontsource/lora'; // Import Lora font
 import '@fontsource/roboto'; // Import Roboto font
+import { auth } from '../firebaseconfig';
 
 const Introduction = () => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
-
+  useEffect(() => {
+    if (auth.currentUser) {
+      navigate('/product');
+      return;
+    }
+  });
   const fadeIn = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 1 } },
