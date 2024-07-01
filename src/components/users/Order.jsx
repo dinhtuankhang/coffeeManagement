@@ -13,6 +13,7 @@ const Order = () => {
     const [editedAddress, setEditedAddress] = useState('');
     const [editedPhoneNumber, setEditedPhoneNumber] = useState('');
     const [editedProducts, setEditedProducts] = useState([]);
+    const [totalPrice, setTotalPrice] = useState(0);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -41,11 +42,24 @@ const Order = () => {
     }, []);
 
     const editOrder = (order) => {
+        const currentTime = new Date();
+        const orderTime = new Date(order.createdDate.seconds * 1000);
+        const timeDiff = (currentTime - orderTime) / 1000 / 60; 
+        if (timeDiff > 5) {
+            alert('You can only edit the order within 5 minutes after it is created.');
+            return;
+        }
         setSelectedOrder(order);
         setEditedAddress(order.address);
         setEditedPhoneNumber(order.phoneNumber);
-        setEditedProducts(order.products || []);
-        
+        const newData = order.cart;
+        setEditedProducts(newData);
+        calculateTotalPrice(newData);
+    };
+
+    const calculateTotalPrice = (products) => {
+        const total = products.reduce((sum, product) => sum + product.productPrice * product.quantity, 0);
+        setTotalPrice(total);
     };
 
     const updateOrder = async () => {
@@ -53,7 +67,8 @@ const Order = () => {
             await updateDoc(doc(db, 'ordersInfo', selectedOrder.id), {
                 address: editedAddress,
                 phoneNumber: editedPhoneNumber,
-                products: editedProducts
+                cart: editedProducts,
+                totalPrice: totalPrice
             });
             alert('Order updated successfully!');
             setSelectedOrder(null);
@@ -80,6 +95,7 @@ const Order = () => {
             return product;
         });
         setEditedProducts(updatedProducts);
+        calculateTotalPrice(updatedProducts);
     };
 
     const logout = async () => {
@@ -273,7 +289,7 @@ const Order = () => {
                         <h4 style={{ color: '#8B4513' }}>Products:</h4>
                         {editedProducts.map(product => (
                             <div key={product.id} style={{ marginBottom: '10px' }}>
-                                <span>{selectedOrder.cart[0]}</span>
+                                <span>{product.productName}</span>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <motion.button
                                         style={{
@@ -311,6 +327,7 @@ const Order = () => {
                                 </div>
                             </div>
                         ))}
+                        <h4 style={{ color: '#8B4513' }}>Total Price: ${totalPrice.toFixed(2)}</h4>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                             <motion.button
                                 style={{

@@ -19,7 +19,8 @@ const Product = () => {
         address: '',
         phoneNumber: ''
     });
-
+    const [flyUpAdd, setFlyUpAdd] = useState(null);
+    const [flyUpRemove, setFlyUpRemove] = useState(null);
     useEffect(() => {
         const fetchCategoriesAndProducts = async () => {
             if (!auth.currentUser) {
@@ -54,6 +55,8 @@ const Product = () => {
         } else {
             setCart([...cart, { ...product, quantity: 1 }]);
         }
+        setFlyUpAdd(product.id);
+        setTimeout(() => setFlyUpAdd(null), 1000);
     };
 
     const removeFromCart = (product) => {
@@ -67,6 +70,8 @@ const Product = () => {
         } else {
             setCart(cart.filter(item => item.id !== product.id));
         }
+        setFlyUpRemove(product.id);
+        setTimeout(() => setFlyUpRemove(null), 1000);
     };
 
     const getTotalPrice = () => {
@@ -126,7 +131,6 @@ const Product = () => {
     useEffect(() => {
         if (location.state && location.state.order) {
             const { order } = location.state;
-            setShowCheckout(true);
             setAddress(order.address);
             setPhoneNumber(order.phoneNumber);
             setCart(order.cart);
@@ -222,7 +226,6 @@ const Product = () => {
                             >
                                 Log Out
                             </motion.button>
-
                         </div>
                     )}
                 </div>
@@ -268,12 +271,13 @@ const Product = () => {
                     </button>
                 ))}
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
                 {filteredProducts.map(product => (
-                    <div key={product.id} style={{ backgroundColor: '#FFF', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', padding: '20px', margin: '10px', flex: '1 1 calc(25% - 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <img src={product.productImage} alt={product.productName} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '10px', marginBottom: '10px' }} />
-                        <h2 style={{ fontSize: '20px', margin: '10px 0' }}>{product.productName}</h2>
-                        <p style={{ fontSize: '18px', color: '#555' }}>${product.productPrice}</p>
+                    <div key={product.id} style={{ width: '200px', backgroundColor: '#FFF', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', padding: '20px', textAlign: 'center', position: 'relative' }}>
+                        <img src={product.productImg} alt={product.productName} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '10px' }} />
+                        <h3 style={{ color: '#8B4513' }}>{product.productName}</h3>
+                        <p style={{ color: '#8B4513' }}>{product.productDescription}</p>
+                        <p style={{ color: '#8B4513', fontWeight: 'bold' }}>${product.productPrice}</p>
                         <motion.button
                             onClick={() => addToCart(product)}
                             style={{
@@ -284,17 +288,93 @@ const Product = () => {
                                 padding: '10px 20px',
                                 cursor: 'pointer',
                                 fontWeight: 'bold',
-                                marginTop: '10px',
+                                position: 'relative',
+                                zIndex: 2,
                             }}
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                         >
-                            Add to Cart
+                            +
                         </motion.button>
+                        <motion.button
+                            onClick={() => removeFromCart(product)}
+                            style={{
+                                backgroundColor: '#8B4513',
+                                color: '#FFF',
+                                border: 'none',
+                                borderRadius: '5px',
+                                padding: '10px 20px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                position: 'relative',
+                                zIndex: 2,
+                                marginLeft:'5px'
+                            }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            -
+                        </motion.button>
+                        {flyUpAdd === product.id && (
+                            <motion.div
+                                initial={{ opacity: 1, y: 0 }}
+                                animate={{ opacity: 0, y: -50 }}
+                                transition={{ duration: 1 }}
+                                style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    right: '10px',
+                                    color: 'green',
+                                    fontWeight: 'bold',
+                                    fontSize: '20px',
+                                    zIndex: 1,
+                                }}
+                            >
+                                +1
+                            </motion.div>
+                        )}
+                        {flyUpRemove === product.id && (
+                            <motion.div
+                                initial={{ opacity: 1, y: 0 }}
+                                animate={{ opacity: 0, y: -50 }}
+                                transition={{ duration: 1 }}
+                                style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    right: '10px',
+                                    color: 'green',
+                                    fontWeight: 'bold',
+                                    fontSize: '20px',
+                                    zIndex: 1,
+                                }}
+                            >
+                                -1
+                            </motion.div>
+                        )}
                     </div>
                 ))}
             </div>
-
+            {cart.length > 0 && (
+                <motion.button
+                    onClick={() => setShowCheckout(true)}
+                    style={{
+                        backgroundColor: '#8B4513',
+                        color: '#FFF',
+                        border: 'none',
+                        borderRadius: '5px',
+                        padding: '10px 20px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        position: 'fixed',
+                        bottom: '20px',
+                        right: '20px',
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                >
+                    Checkout
+                </motion.button>
+            )}
             {showCheckout && (
                 <div style={{
                     position: 'fixed',
@@ -304,79 +384,97 @@ const Product = () => {
                     height: '100%',
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     display: 'flex',
-                    justifyContent: 'center',
                     alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
                 }}>
-                    <div style={{ backgroundColor: '#FFF', borderRadius: '10px', padding: '20px', width: '400px' }}>
-                        <h2>Checkout</h2>
+                    <div style={{
+                        backgroundColor: '#FFF',
+                        padding: '20px',
+                        borderRadius: '10px',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                        width: '400px',
+                    }}>
+                        <h2 style={{ textAlign: 'center', color: '#8B4513' }}>Checkout</h2>
                         <div style={{ marginBottom: '10px' }}>
-                            <label>Address:</label>
+                            <label style={{ color: '#8B4513', fontWeight: 'bold' }}>Address:</label>
                             <input
                                 type="text"
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
-                                style={{ width: '100%', padding: '10px', marginBottom: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '5px',
+                                    border: '1px solid #8B4513',
+                                    marginTop: '5px',
+                                    boxSizing: 'border-box',
+                                }}
                             />
-                            {inputErrors.address && <span style={{ color: 'red', fontSize: '12px' }}>{inputErrors.address}</span>}
+                            {inputErrors.address && <p style={{ color: 'red' }}>{inputErrors.address}</p>}
                         </div>
                         <div style={{ marginBottom: '10px' }}>
-                            <label>Phone Number:</label>
+                            <label style={{ color: '#8B4513', fontWeight: 'bold' }}>Phone Number:</label>
                             <input
                                 type="text"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                style={{ width: '100%', padding: '10px', marginBottom: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '5px',
+                                    border: '1px solid #8B4513',
+                                    marginTop: '5px',
+                                    boxSizing: 'border-box',
+                                }}
                             />
-                            {inputErrors.phoneNumber && <span style={{ color: 'red', fontSize: '12px' }}>{inputErrors.phoneNumber}</span>}
+                            {inputErrors.phoneNumber && <p style={{ color: 'red' }}>{inputErrors.phoneNumber}</p>}
                         </div>
-                        <div>
-                            <h3>Cart Items</h3>
-                            <ul>
-                                {cart.map(item => (
-                                    <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                        <span>{item.productName} (x{item.quantity})</span>
-                                        <span>${(item.productPrice * item.quantity).toFixed(2)}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <h3>Total: ${getTotalPrice().toFixed(2)}</h3>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <motion.button
-                                onClick={handleCheckout}
-                                style={{
-                                    backgroundColor: '#8B4513',
-                                    color: '#FFF',
-                                    border: 'none',
-                                    borderRadius: '5px',
-                                    padding: '10px 20px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold',
-                                    marginTop: '10px',
-                                }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                            >
-                                Confirm Order
-                            </motion.button>
-                            <motion.button
-                                onClick={() => setShowCheckout(false)}
-                                style={{
-                                    backgroundColor: '#8B4513',
-                                    color: '#FFF',
-                                    border: 'none',
-                                    borderRadius: '5px',
-                                    padding: '10px 20px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold',
-                                    marginTop: '10px',
-                                }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                            >
-                                Close
-                            </motion.button>
-                        </div>
+                        <h3 style={{ color: '#8B4513' }}>Cart Items</h3>
+                        <ul>
+                            {cart.map(item => (
+                                <li key={item.id} style={{ color: '#8B4513' }}>
+                                    {item.productName} - Quantity: {item.quantity}
+                                </li>
+                            ))}
+                        </ul>
+                        <h3 style={{ color: '#8B4513' }}>Total Price: ${getTotalPrice()}</h3>
+                        <motion.button
+                            onClick={handleCheckout}
+                            style={{
+                                backgroundColor: '#8B4513',
+                                color: '#FFF',
+                                border: 'none',
+                                borderRadius: '5px',
+                                padding: '10px 20px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                width: '100%',
+                                marginTop: '10px',
+                            }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            Confirm Order
+                        </motion.button>
+                        <motion.button
+                            onClick={() => setShowCheckout(false)}
+                            style={{
+                                backgroundColor: '#FF6347',
+                                color: '#FFF',
+                                border: 'none',
+                                borderRadius: '5px',
+                                padding: '10px 20px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                width: '100%',
+                                marginTop: '10px',
+                            }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            Close
+                        </motion.button>
                     </div>
                 </div>
             )}

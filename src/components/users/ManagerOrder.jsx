@@ -88,7 +88,7 @@ const ManagerOrder = () => {
                         <p style={{ marginBottom: '10px' }}>User ID: {order.userId}</p>
                         <p style={{ marginBottom: '10px' }}>Address: {order.address}</p>
                         <p style={{ marginBottom: '10px' }}>Phone Number: {order.phoneNumber}</p>
-                        <p style={{ marginBottom: '10px' }}>Total Price: ${order.totalPrice.toFixed(2)}</p>
+                        <p style={{ marginBottom: '10px' }}>Total Price: ${order.totalPrice}</p>
                         <p style={{ marginBottom: '10px' }}>Status:
                             <select
                                 value={order.status}
